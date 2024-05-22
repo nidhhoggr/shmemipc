@@ -131,7 +131,7 @@ func (smp *ShmProvider) Listen(name string, len uint64) (err error) {
 	if err != nil {
 		return err
 	}
-	smp.initEncoderDecoder(smp.ipcBuffer)
+	smp.initEncoderDecoder()
 	smp.name = name
 	runtime.SetFinalizer(smp, func(smp *ShmProvider) { smp.close() })
 	return nil
@@ -165,7 +165,7 @@ func (smp *ShmProvider) Dial(name string) (err error) {
 	if err != nil {
 		return err
 	}
-	smp.initEncoderDecoder(smp.ipcBuffer)
+	smp.initEncoderDecoder()
 	return nil
 }
 
