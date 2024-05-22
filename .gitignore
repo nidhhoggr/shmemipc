@@ -1,7 +1,16 @@
-example/__debug_bin
-example/shmipc
-example/__debug_bin.exe
-proto/shmem.pb.go
-shmipc
-shmemlib/shmemlib.test.exe
-shmemlib/cpu.prof
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.bash
+
+# Test binary, build with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+bin/
+.idea
