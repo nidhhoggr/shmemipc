@@ -1,76 +1,87 @@
 package main
 
 import (
-	"context"
 	"fmt"
-	"strconv"
+	shmemipc "github.com/joe-at-startupmedia/shmemipc"
 	"sync"
 	"time"
-
-	shmemipc "github.com/joe-at-startupmedia/shmemipc"
 )
 
 var msgIndex int
 
 // onNewMessage is the callback function that is called when a new message is received
-func onNewMessage(data []byte, requestMetadata map[string]string) ([]byte, int, string) {
+func newMessage(data []byte) string {
 	fmt.Printf("[server] [%d] Read from client: %s\n", msgIndex, string(data))
 	clientMessage := "Hello, client!"
-	fmt.Printf("[server] [%d] Write to client: %s, 200, OK\n\n", msgIndex, clientMessage)
+	fmt.Printf("[server] [%d] Write to client: %s\n", msgIndex, clientMessage)
 	msgIndex++
-	return []byte(clientMessage), 200, "OK"
+	return clientMessage
 }
 
-func serverRoutine(ctx context.Context, shm *shmemipc.ShmProvider) {
+func serverRoutine(server *shmemipc.ShmProvider, client *shmemipc.ShmProvider) {
 
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
-		shm.Receive(ctx, onNewMessage)
+		msg, err := server.Read()
+		if err != nil {
+			panic(err)
+		}
+		err = client.Write([]byte(newMessage(msg)))
+		if err != nil {
+			panic(err)
+		}
 		wg.Done()
 	}()
 
-	//shm.Close(&wg)
+	wg.Wait()
 }
 
-func clientRoutine(ctx context.Context, shm *shmemipc.ShmProvider) {
-	metadata := map[string]string{
-		"key1": "value1",
-		"key2": "value2",
-	}
+func clientRoutine(server *shmemipc.ShmProvider, client *shmemipc.ShmProvider) {
 
 	serverMessage := "Hello, server!"
 	fmt.Println("[client] Write to server: " + serverMessage)
 
-	// Send the message to the server
-	response, status, statusMessage := shm.Send(ctx, []byte(serverMessage), metadata)
-	fmt.Println("[client] Response from server: " + string(response) + ", " + strconv.Itoa(int(status)) + ", " + statusMessage)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
 
-	//shm.Close(nil)
+		err := server.Write([]byte(serverMessage))
+		if err != nil {
+			panic(err)
+		}
+		msg, err := client.Read()
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("[client] Response from server: %s\n", string(msg))
+		wg.Done()
+	}()
+
+	wg.Wait()
 }
 
 // main is the main function
 func main() {
-	// create a shared memory provider
-	ctx := context.Background()
-	shm := shmemipc.ShmProvider{}
-	err := shm.Listen(ctx, "/tmp/shmipc")
+
+	server, err := shmemipc.StartServer("example", 100)
 	if err != nil {
-		// this is the server because the shared memory
-		// does not exist yet
-		err := shm.Dial(ctx, "/tmp/shmipc", 100)
-		if err != nil {
-			fmt.Println("Dial failed:" + err.Error())
-			return
-		}
+		panic(err)
 	}
+	defer server.Close(nil)
 
-	// write to or read from shared memory
+	client, err := shmemipc.StartClient("example")
+	if err != nil {
+		panic(err)
+	}
+	defer client.Close(nil)
 
-	go serverRoutine(ctx, &shm)
+	go func() {
+		serverRoutine(server, client)
+		server.Close(nil)
+	}()
 
-	time.Sleep(time.Second * 4)
+	clientRoutine(server, client)
 
-	clientRoutine(ctx, &shm)
-	shm.Close(nil)
+	time.Sleep(time.Second * 1)
 }

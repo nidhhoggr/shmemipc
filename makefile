@@ -35,7 +35,3 @@ fmt-check:
     echo "$${diff}"; \
     exit 1; \
   fi;
-
-.PHONY: protogen
-protogen:
-	protoc protos/*.proto  --go_out=.

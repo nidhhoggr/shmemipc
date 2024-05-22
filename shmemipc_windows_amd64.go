@@ -1,11 +1,9 @@
 package shmemipc
 
 import (
-	"context"
 	"runtime"
 	"sync"
 	"syscall"
-	"unicode/utf16"
 	"unsafe"
 
 	memory "github.com/apache/arrow/go/arrow/memory"
@@ -15,10 +13,10 @@ import (
 const (
 	eventRequestReadySuffix  = "-RequestReadyEvent"
 	eventResponseReadySuffix = "-ResponseReadyEvent"
-	zeroHandle               = windows.Handle(0)
 )
 
 type ShmProvider struct {
+	name      string
 	closed    bool
 	bufmu     sync.Mutex
 	ipcBuffer []byte
@@ -26,20 +24,6 @@ type ShmProvider struct {
 	handle    uintptr
 	wrevent   uintptr
 	rdevent   uintptr
-}
-
-// StringToCharPtr converts a Go string into pointer to a null-terminated cstring.
-// This assumes the go string is already ANSI encoded.
-func StringToCharPtr(str string) *uint8 {
-	chars := append([]byte(str), 0) // null terminated
-	return &chars[0]
-}
-
-// StringToUTF16Ptr converts a Go string into a pointer to a null-terminated UTF-16 wide string.
-// This assumes str is of a UTF-8 compatible encoding so that it can be re-encoded as UTF-16.
-func StringToUTF16Ptr(str string) *uint16 {
-	wchars := utf16.Encode([]rune(str + "\x00"))
-	return &wchars[0]
 }
 
 // Create signalling event
@@ -113,13 +97,13 @@ func OpenFileMapping(desiredAccess uint32, inheritHandle bool, name *uint16) (ha
 	r0, _, e1 := syscall.Syscall(procOpenFileMappingW.Addr(), 3, uintptr(desiredAccess), uintptr(_p0), uintptr(unsafe.Pointer(name)))
 	handle = windows.Handle(r0)
 	if handle == 0 {
-		err = windows.Errno(e1)
+		err = e1
 	}
 	return
 }
 
-// Creates a file mapping with the specified name and size, and returns a handle to the file mapping.
-func (smp *ShmProvider) Dial(ctx context.Context, name string, len uint64) (err error) {
+// Listen Creates a file mapping with the specified name and size, and returns a handle to the file mapping.
+func (smp *ShmProvider) Listen(name string, len uint64) (err error) {
 
 	defer func() {
 		if err != nil {
@@ -148,12 +132,13 @@ func (smp *ShmProvider) Dial(ctx context.Context, name string, len uint64) (err 
 		return err
 	}
 	smp.initEncoderDecoder(smp.ipcBuffer)
+	smp.name = name
 	runtime.SetFinalizer(smp, func(smp *ShmProvider) { smp.close() })
 	return nil
 }
 
-// Opens a file mapping with the specified name, and returns a handle to the file mapping.
-func (smp *ShmProvider) Listen(ctx context.Context, name string) (err error) {
+// Dial Opens a file mapping with the specified name, and returns a handle to the file mapping.
+func (smp *ShmProvider) Dial(name string) (err error) {
 	defer func() {
 		if err != nil {
 			smp.close() // If returning any error, make sure all native resources are destroyed
@@ -185,7 +170,8 @@ func (smp *ShmProvider) Listen(ctx context.Context, name string) (err error) {
 }
 
 func (smp *ShmProvider) close() { // Finalize
-
+	smp.bufmu.Lock()
+	defer smp.bufmu.Unlock()
 	if smp.ipcBuffer != nil {
 		windows.UnmapViewOfFile(uintptr(unsafe.Pointer(&smp.ipcBuffer[0])))
 	}
@@ -203,8 +189,6 @@ func (smp *ShmProvider) Close(wg *sync.WaitGroup) error {
 		smp.signalevent(smp.wrevent)
 		wg.Wait()
 	}
-	smp.bufmu.Lock()
-	defer smp.bufmu.Unlock()
 	smp.close()
 	return nil
 }
