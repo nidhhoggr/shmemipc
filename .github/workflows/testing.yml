@@ -59,12 +59,6 @@ jobs:
           GOARCH=amd64 go build -v ./...
         shell: bash
 
-      - name: Build 386
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          GOARCH=386 go build -v ./...
-        shell: bash
-
       - name: Build arm64
         if: |
           matrix.os == 'ubuntu-latest'
