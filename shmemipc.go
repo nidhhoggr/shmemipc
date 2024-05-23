@@ -2,7 +2,6 @@ package shmemipc
 
 import (
 	"encoding/binary"
-	"fmt"
 	"github.com/apache/arrow/go/arrow/memory"
 )
 
@@ -11,30 +10,6 @@ const (
 	ENCLENOFFSET = 4
 	DATAOFFSET   = 8
 )
-
-func StartServer(name string, len uint64) (*ShmProvider, error) {
-	shm := ShmProvider{}
-
-	err := shm.Listen(name, len)
-	if err != nil {
-		fmt.Println("Listen failed:" + err.Error())
-		return nil, err
-	}
-
-	return &shm, nil
-}
-
-func StartClient(name string) (*ShmProvider, error) {
-	shm := ShmProvider{}
-
-	err := shm.Dial(name)
-	if err != nil {
-		fmt.Println("Dial failed:" + err.Error())
-		return nil, err
-	}
-
-	return &shm, nil
-}
 
 func (smp *ShmProvider) initEncoderDecoder() {
 	// leave 4 bytes for the length of the message

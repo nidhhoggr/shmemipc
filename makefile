@@ -7,21 +7,20 @@ all: build
 .PHONY: build
 build: 
 	$(GO) mod tidy
-	$(GO) build -o bin/example example/main.go
+	$(GO) build -o bin/simple example/simple/race_fixed.go
+	$(GO) build -o bin/duplex example/duplex/duplex.go
 
 .PHONY: run
 run: 
 	$(GO) mod tidy
-	$(GO) run -race example/main.go
+	$(GO) run -race example/simple/race_fixed.go
+	$(GO) run -race example/duplex/duplex.go
 
 
 .PHONY: test
 test: 
-	$(GO) test -race -v
-
-.PHONY: examples
-examples: build 
-	./bin/example
+	$(GO) clean -testcache
+	$(GO) test -race -v .
 
 .PHONY: fmt
 fmt:

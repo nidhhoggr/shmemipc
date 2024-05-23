@@ -3,10 +3,8 @@
 package shmemipc
 
 import (
-	"fmt"
 	"github.com/apache/arrow/go/arrow/memory"
 	"os"
-	"path/filepath"
 	"sync"
 	"syscall"
 	"unsafe"
@@ -44,13 +42,13 @@ func errnoErr(errno syscall.Errno) error {
 	}
 }
 
-func Ftok(name string, projectid uint8) (int, error) {
-	var stat = syscall.Stat_t{}
-	_, err := os.Stat(name)
-	if err != nil {
+func Ftok(path string, id uint) (uint, error) {
+	st := &syscall.Stat_t{}
+	if err := syscall.Stat(path, st); err != nil {
 		return 0, err
 	}
-	return int(uint(projectid&0xff)<<24 | uint((stat.Dev&0xff)<<16) | (uint(stat.Ino) & 0xffff)), nil
+	return uint((uint(st.Ino) & 0xffff) | uint((st.Dev&0xff)<<16) |
+		((id & 0xff) << 24)), nil
 }
 
 func (smp *ShmProvider) initevents() error {
@@ -92,7 +90,6 @@ func (smp *ShmProvider) openevents(filename string, flag int) error {
 		uintptr(2),
 		uintptr(flag))
 	if err != syscall.Errno(0) {
-
 		return err
 	}
 	smp.event = r1
@@ -123,11 +120,9 @@ func (smp *ShmProvider) waitforevent(event uintptr) error {
 	return nil
 }
 
-func (smp *ShmProvider) Listen(name string, len uint64) error {
-	filename := getFilename(name)
+func (smp *ShmProvider) Listen(filename string, len uint64) error {
 	f, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
-		fmt.Println("err 1")
 		return err
 	}
 	defer f.Close()
@@ -135,23 +130,22 @@ func (smp *ShmProvider) Listen(name string, len uint64) error {
 	f.Truncate(int64(len))
 	ptr, err := syscall.Mmap(int(f.Fd()), 0, int(len), syscall.PROT_WRITE|syscall.PROT_READ, syscall.MAP_SHARED)
 	if err != nil {
-		fmt.Println("err 2")
 		return err
 	}
+
 	err = smp.openevents(filename, IPC_CREAT|0600)
 	if err != nil {
-		fmt.Println("err 3")
 		smp.Close(nil)
 		return err
 	}
-	smp.name = name
+
+	smp.name = filename
 	smp.ipcBuffer = ptr
 	smp.initEncoderDecoder()
 	return nil
 }
 
-func (smp *ShmProvider) Dial(name string) error {
-	filename := getFilename(name)
+func (smp *ShmProvider) Dial(filename string) error {
 	f, err := os.OpenFile(filename, os.O_RDWR, 0)
 	if err != nil {
 		return err
@@ -174,6 +168,7 @@ func (smp *ShmProvider) Dial(name string) error {
 
 		return err
 	}
+
 	smp.initevents()
 	smp.ipcBuffer = ptr
 	smp.initEncoderDecoder()
@@ -200,11 +195,7 @@ func (smp *ShmProvider) Close(wg *sync.WaitGroup) error {
 		// this is the server if we created the file and recorded its name
 		_, _, _ = syscall.Syscall(syscall.SYS_SEMCTL, uintptr(smp.event),
 			uintptr(0), uintptr(IPC_RMID))
-		syscall.Unlink(getFilename(smp.name))
+		syscall.Unlink(smp.name)
 	}
 	return nil
-}
-
-func getFilename(name string) string {
-	return filepath.Join("/dev/shm", name)
 }
