@@ -2,7 +2,6 @@ package shmemipc
 
 import (
 	"fmt"
-	"path/filepath"
 	"testing"
 	"time"
 )
@@ -14,10 +13,6 @@ func log(i int, info string) {
 		//if i == TEST_COUNT-1 {
 		fmt.Println(info)
 	}
-}
-
-func getFilename(name string) string {
-	return filepath.Join("/tmp", name)
 }
 
 func TestSimple(t *testing.T) {
