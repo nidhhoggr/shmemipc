@@ -7,13 +7,13 @@ all: build
 .PHONY: build
 build: 
 	$(GO) mod tidy
-	$(GO) build -o bin/simple example/simple/race_fixed.go
+	$(GO) build -o bin/fixed example/race/fixed/fixed.go
 	$(GO) build -o bin/duplex example/duplex/duplex.go
 
 .PHONY: run
 run: 
 	$(GO) mod tidy
-	$(GO) run -race example/simple/race_fixed.go
+	$(GO) run -race example/race/fixed/fixed.go
 	$(GO) run -race example/duplex/duplex.go
 
 
