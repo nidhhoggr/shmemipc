@@ -1,5 +1,7 @@
 package shmemipc
 
+import "time"
+
 type IpcResponder BidirectionalShmem
 
 func NewResponder(filename string, len uint64) *IpcResponder {
@@ -18,6 +20,10 @@ func NewResponder(filename string, len uint64) *IpcResponder {
 
 func (ir *IpcResponder) Read() ([]byte, error) {
 	return ir.shmRqst.Read()
+}
+
+func (ir *IpcResponder) ReadTimed(duration time.Duration) ([]byte, error) {
+	return ir.shmRqst.ReadTimed(duration)
 }
 
 func (ir *IpcResponder) Write(b []byte) error {

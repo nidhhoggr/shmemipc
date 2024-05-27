@@ -2,7 +2,9 @@ package shmemipc
 
 import (
 	"encoding/binary"
+	"errors"
 	"github.com/apache/arrow/go/arrow/memory"
+	"time"
 )
 
 const (
@@ -52,6 +54,31 @@ func (smp *ShmProvider) Read() ([]byte, error) {
 		return request, nil
 	}
 	return nil, nil
+}
+
+func (smp *ShmProvider) ReadTimed(duration time.Duration) ([]byte, error) {
+
+	readMsgChan := make(chan *[]byte, 1)
+	readErrChan := make(chan error, 1)
+
+	go func() {
+		m, err := smp.Read()
+		readMsgChan <- &m
+		readErrChan <- err
+	}()
+
+	select {
+	case <-time.After(duration):
+		go func() {
+			msg := <-readMsgChan
+			if msg != nil {
+				smp.Write(*msg)
+			}
+		}()
+		return nil, errors.New("timed_out")
+	case msg := <-readMsgChan:
+		return *msg, <-readErrChan
+	}
 }
 
 // Send function
