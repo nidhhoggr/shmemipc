@@ -149,7 +149,7 @@ func (smp *ShmProvider) Listen(filename string, len uint64, flags int) error {
 }
 
 func (smp *ShmProvider) Dial(filename string) error {
-	f, err := os.OpenFile(filename, os.O_RDWR, 0)
+	f, err := os.OpenFile(filename, os.O_RDWR, 0666)
 	if err != nil {
 		return err
 	}
