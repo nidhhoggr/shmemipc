@@ -103,7 +103,11 @@ func OpenFileMapping(desiredAccess uint32, inheritHandle bool, name *uint16) (ha
 }
 
 // Listen Creates a file mapping with the specified name and size, and returns a handle to the file mapping.
-func (smp *ShmProvider) Listen(name string, len uint64) (err error) {
+func (smp *ShmProvider) Listen(name string, len uint64, flags uint32) (err error) {
+
+	if flags == 0 {
+		flags = windows.FILE_MAP_READ | windows.FILE_MAP_WRITE
+	}
 
 	defer func() {
 		if err != nil {
@@ -120,7 +124,7 @@ func (smp *ShmProvider) Listen(name string, len uint64) (err error) {
 	smp.handle = uintptr(r1)
 
 	// Map the file into memory
-	ptr, err := windows.MapViewOfFile(windows.Handle(smp.handle), windows.FILE_MAP_READ|windows.FILE_MAP_WRITE, 0, 0, 0)
+	ptr, err := windows.MapViewOfFile(windows.Handle(smp.handle), flags, 0, 0, 0)
 	if err != nil {
 		return err
 	}

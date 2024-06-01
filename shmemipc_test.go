@@ -73,7 +73,7 @@ func clientRoutine(server *ShmProvider, client *ShmProvider) {
 // main is the main function
 func TestDuplex(t *testing.T) {
 	filename := getFilename("test_duplex")
-	responder := NewResponder(filename, 100)
+	responder := NewResponder(filename, 100, 0)
 	if err := responder.GetError(); err != nil {
 		panic(err)
 	}
