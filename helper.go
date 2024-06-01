@@ -7,7 +7,7 @@ import (
 func StartServer(name string, len uint64) (*ShmProvider, error) {
 	shm := ShmProvider{}
 
-	err := shm.Listen(name, len)
+	err := shm.Listen(name, len, 0)
 	if err != nil {
 		fmt.Printf("Listen (%s)(%d) failed: %s", name, len, err.Error())
 		return nil, err

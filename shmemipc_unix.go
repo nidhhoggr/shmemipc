@@ -120,8 +120,11 @@ func (smp *ShmProvider) waitforevent(event uintptr) error {
 	return nil
 }
 
-func (smp *ShmProvider) Listen(filename string, len uint64) error {
-	f, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE, 0666)
+func (smp *ShmProvider) Listen(filename string, len uint64, flag int) error {
+	if flag == 0 {
+		flag = os.O_RDWR | os.O_CREATE | os.O_TRUNC
+	}
+	f, err := os.OpenFile(filename, flag, 0666)
 	if err != nil {
 		return err
 	}
