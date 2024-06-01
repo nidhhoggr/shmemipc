@@ -14,7 +14,7 @@ func main() {
 
 	wg.Add(example.TEST_COUNT)
 
-	server, err := shmemipc.StartServer(filename, 100)
+	server, err := shmemipc.StartServer(filename, 100, 0)
 	if err != nil {
 		panic(err)
 	}

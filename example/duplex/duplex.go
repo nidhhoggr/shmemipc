@@ -49,7 +49,7 @@ func requesterRoutine(ir *shmemipc.IpcRequester) {
 // main is the main function
 func main() {
 	filename := "/tmp/example_duplex"
-	responder := shmemipc.NewResponder(filename, 100)
+	responder := shmemipc.NewResponder(filename, 100, 0)
 	if err := responder.GetError(); err != nil {
 		panic(err)
 	}

@@ -17,7 +17,7 @@ func log(i int, info string) {
 
 func TestSimple(t *testing.T) {
 	filename := getFilename("test_simple")
-	server, err := StartServer(filename, 100)
+	server, err := StartServer(filename, 100, 0)
 	if err != nil {
 		panic(err)
 	}

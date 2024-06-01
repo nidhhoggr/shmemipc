@@ -39,7 +39,7 @@ func main() {
 
 	filename := "/tmp/example_simple_race"
 
-	server, err := shmemipc.StartServer(filename, 100)
+	server, err := shmemipc.StartServer(filename, 100, 0)
 	if err != nil {
 		panic(err)
 	}

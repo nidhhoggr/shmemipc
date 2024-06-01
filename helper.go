@@ -4,10 +4,10 @@ import (
 	"fmt"
 )
 
-func StartServer(name string, len uint64) (*ShmProvider, error) {
+func StartServer(name string, len uint64, flags int) (*ShmProvider, error) {
 	shm := ShmProvider{}
 
-	err := shm.Listen(name, len, 0)
+	err := shm.Listen(name, len, flags)
 	if err != nil {
 		fmt.Printf("Listen (%s)(%d) failed: %s", name, len, err.Error())
 		return nil, err

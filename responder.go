@@ -4,9 +4,9 @@ import "time"
 
 type IpcResponder BidirectionalShmem
 
-func NewResponder(filename string, len uint64) *IpcResponder {
-	responder, errResp := StartServer(filename+"_resp", len)
-	requester, errRqst := StartServer(filename+"_rqst", len)
+func NewResponder(filename string, len uint64, flags int) *IpcResponder {
+	responder, errResp := StartServer(filename+"_resp", len, flags)
+	requester, errRqst := StartServer(filename+"_rqst", len, flags)
 
 	ir := IpcResponder{
 		shmResp: responder,
