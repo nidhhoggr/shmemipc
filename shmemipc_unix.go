@@ -136,7 +136,7 @@ func (smp *ShmProvider) Listen(filename string, len uint64, flags int) error {
 		return err
 	}
 
-	err = smp.openevents(filename, IPC_CREAT|0600)
+	err = smp.openevents(filename, IPC_CREAT|0666)
 	if err != nil {
 		smp.Close(nil)
 		return err
