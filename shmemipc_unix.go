@@ -3,7 +3,7 @@
 package shmemipc
 
 import (
-	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/joe-at-startupmedia/go-arrow/arrow/memory"
 	"os"
 	"sync"
 	"syscall"
