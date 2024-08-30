@@ -25,9 +25,8 @@ func (smp *ShmProvider) Read() ([]byte, error) {
 
 	// loop forever
 	smp.bufmu.Lock()
-	defer func() {
-		smp.bufmu.Unlock()
-	}()
+	defer smp.bufmu.Unlock()
+
 	for !smp.closed {
 
 		// Wait for a message
@@ -85,6 +84,9 @@ func (smp *ShmProvider) ReadTimed(duration time.Duration) ([]byte, error) {
 // Send function
 // Writes a 1 to the index to indicate that the message has been written
 func (smp *ShmProvider) Write(data []byte) error {
+
+	smp.bufmu.Lock()
+	defer smp.bufmu.Unlock()
 
 	if smp.closed {
 		return errors.New("buffer is closed")
