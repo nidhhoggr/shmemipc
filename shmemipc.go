@@ -3,8 +3,9 @@ package shmemipc
 import (
 	"encoding/binary"
 	"errors"
-	"github.com/joe-at-startupmedia/go-arrow/arrow/memory"
 	"time"
+
+	"github.com/joe-at-startupmedia/go-arrow/arrow/memory"
 )
 
 const (
@@ -84,6 +85,10 @@ func (smp *ShmProvider) ReadTimed(duration time.Duration) ([]byte, error) {
 // Send function
 // Writes a 1 to the index to indicate that the message has been written
 func (smp *ShmProvider) Write(data []byte) error {
+
+	if smp.closed {
+		return errors.New("buffer is closed")
+	}
 
 	binary.LittleEndian.PutUint32(smp.ipcBuffer[INDEXOFFSET:], uint32(0))
 	encodingLen := uint32(len(data))

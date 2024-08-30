@@ -3,11 +3,12 @@
 package shmemipc
 
 import (
-	"github.com/joe-at-startupmedia/go-arrow/arrow/memory"
 	"os"
 	"sync"
 	"syscall"
 	"unsafe"
+
+	"github.com/joe-at-startupmedia/go-arrow/arrow/memory"
 )
 
 type ShmProvider struct {
@@ -182,10 +183,14 @@ func (smp *ShmProvider) Close(wg *sync.WaitGroup) error {
 
 	// signal waiting listening goroutine if there is one
 	if wg != nil {
-		smp.closed = true
-		smp.signalevent(smp.wrevent)
 		wg.Wait()
 	}
+
+	smp.closed = true
+	//why would it write here?
+	//because it causes us to break out of the read loop
+	smp.signalevent(smp.wrevent)
+
 	smp.bufmu.Lock()
 	defer smp.bufmu.Unlock()
 
