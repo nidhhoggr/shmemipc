@@ -8,7 +8,7 @@ import (
 	"github.com/nidhhoggr/go-arrow/arrow/memory"
 )
 
-const Version string = "0.0.12"
+const Version string = "0.0.13"
 
 const (
 	INDEXOFFSET  = 0
