@@ -5,8 +5,10 @@ import (
 	"errors"
 	"time"
 
-	"github.com/joe-at-startupmedia/go-arrow/arrow/memory"
+	"github.com/nidhhoggr/go-arrow/arrow/memory"
 )
+
+const Version string = "0.0.12"
 
 const (
 	INDEXOFFSET  = 0

@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/joe-at-startupmedia/shmemipc"
-	"github.com/joe-at-startupmedia/shmemipc/example"
+	"github.com/nidhhoggr/shmemipc"
+	"github.com/nidhhoggr/shmemipc/example"
 	"time"
 )
 

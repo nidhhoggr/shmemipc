@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/joe-at-startupmedia/shmemipc"
+	"github.com/nidhhoggr/shmemipc"
 	"time"
 )
 

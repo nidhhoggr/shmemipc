@@ -6,7 +6,7 @@ import (
 	"syscall"
 	"unsafe"
 
-	memory "github.com/joe-at-startupmedia/go-arrow/arrow/memory"
+	memory "github.com/nidhhoggr/go-arrow/arrow/memory"
 	"golang.org/x/sys/windows"
 )
 

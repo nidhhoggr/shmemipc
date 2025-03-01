@@ -2,7 +2,7 @@ package example
 
 import (
 	"fmt"
-	"github.com/joe-at-startupmedia/shmemipc"
+	"github.com/nidhhoggr/shmemipc"
 	"sync"
 )
 

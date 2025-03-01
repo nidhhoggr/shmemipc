@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/joe-at-startupmedia/shmemipc"
-	"github.com/joe-at-startupmedia/shmemipc/example"
+	"github.com/nidhhoggr/shmemipc"
+	"github.com/nidhhoggr/shmemipc/example"
 	"sync"
 	"time"
 )
